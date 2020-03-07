@@ -126,8 +126,8 @@ void DrawESP(LPDIRECT3DDEVICE9 device)
 						if (WorldToScreen(device, vmatrix, &pos, &out))
 						{
 							float dist = Get3dDistance(localPlayer->Pos, players[i]->Pos);
-							int width = DEFAULT_BOX_WIDTH / dist;
-							int height = DEFAULT_BOX_HEIGHT / dist;
+							int width = ((DEFAULT_BOX_WIDTH / 640) * wrect.GetWidth()) / dist;
+							int height = ((DEFAULT_BOX_HEIGHT / 480) * wrect.GetHeight()) / dist;
 							D3DCOLOR draw_color;
 							if (esp_box)
 							{
