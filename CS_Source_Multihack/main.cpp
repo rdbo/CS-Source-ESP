@@ -10,9 +10,11 @@ PTR EndSceneAddress;
 EndScene oEndScene;
 WNDPROC oWndProc;
 bool showMenu = false;
+Window wrect;
 
 void DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DDevice9* dev);
 void DrawBorderBox(int x, int y, int w, int h, int thickness, D3DCOLOR color, IDirect3DDevice9* pDevice);
+void DrawLine(int x1, int y1, int x2, int y2, int thickness, D3DCOLOR color, LPDIRECT3DDEVICE9 device);
 void DrawESP(LPDIRECT3DDEVICE9 device);
 
 void InitImGui(LPDIRECT3DDEVICE9 device)
@@ -32,6 +34,8 @@ long __stdcall PHook::hkEndScene(LPDIRECT3DDEVICE9 device)
 		InitImGui(device);
 		initialized = true;
 	}
+
+	wrect.Update(window);
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -92,17 +96,30 @@ void DrawBorderBox(int x, int y, int w, int h, int thickness, D3DCOLOR color, ID
 	DrawFilledRect(x, y + h, w + thickness, thickness, color, pDevice); //bottom horiz line
 }
 
+void DrawLine(int x1, int y1, int x2, int y2, int thickness, D3DCOLOR color, LPDIRECT3DDEVICE9 device)
+{
+	ID3DXLine* LineL;
+	D3DXCreateLine(device, &LineL);
+
+	D3DXVECTOR2 Line[2];
+	Line[0] = D3DXVECTOR2(x1, y1);
+	Line[1] = D3DXVECTOR2(x2, y2);
+	LineL->SetWidth(thickness);
+	LineL->Draw(Line, 2, color);
+	LineL->Release();
+}
+
 void DrawESP(LPDIRECT3DDEVICE9 device)
 {
-	if (esp_box)
+	if (localPlayerAddr)
 	{
-		if (localPlayerAddr)
+		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
-			for (int i = 0; i < MAX_PLAYERS; i++)
+			if (players[i] != nullptr && (PTR)players[i])
 			{
-				if (players[i] != nullptr && (PTR)players[i])
+				if (updated[i] && players[i]->Dormant == 0 && players[i]->State != 0)
 				{
-					if (updated[i] && players[i]->Dormant == 0 && players[i]->State != 0)
+					if (esp_box || esp_line)
 					{
 						D3DXVECTOR3 pos, out;
 						pos = D3DXVECTOR3(players[i]->Pos.x, players[i]->Pos.y, players[i]->Pos.z);
@@ -112,16 +129,28 @@ void DrawESP(LPDIRECT3DDEVICE9 device)
 							int width = DEFAULT_BOX_WIDTH / dist;
 							int height = DEFAULT_BOX_HEIGHT / dist;
 							D3DCOLOR draw_color;
-							players[i]->Team == localPlayer->Team
-								? draw_color = D3DCOLOR_RGBA((int)(color_team_box[0] * 255), (int)(color_team_box[1] * 255), (int)(color_team_box[2] * 255), (int)255)
-								: draw_color = D3DCOLOR_RGBA((int)(color_enemy_box[0] * 255), (int)(color_enemy_box[1] * 255), (int)(color_enemy_box[2] * 255), (int)255);
-							DrawBorderBox(out.x - width / 2 , out.y - height, width, height, 1, draw_color, device);
+							if (esp_box)
+							{
+								players[i]->Team == localPlayer->Team
+									? draw_color = D3DCOLOR_RGBA((int)(color_team_box[0] * 255), (int)(color_team_box[1] * 255), (int)(color_team_box[2] * 255), (int)255)
+									: draw_color = D3DCOLOR_RGBA((int)(color_enemy_box[0] * 255), (int)(color_enemy_box[1] * 255), (int)(color_enemy_box[2] * 255), (int)255);
+								DrawBorderBox(out.x - width / 2, out.y - height, width, height, 1, draw_color, device);
+							}
+
+							if (esp_line)
+							{
+								if (players[i]->Team != localPlayer->Team)
+								{
+									draw_color = D3DCOLOR_RGBA((int)(color_snapline[0] * 255), (int)(color_snapline[1] * 255), (int)(color_snapline[2] * 255), (int)255);
+									DrawLine(wrect.GetWidth() / 2, wrect.GetHeight(), out.x, out.y, 1, draw_color, device);
+								}
+							}
 						}
 					}
 				}
-
-				updated[i] = false;
 			}
+
+			updated[i] = false;
 		}
 	}
 }

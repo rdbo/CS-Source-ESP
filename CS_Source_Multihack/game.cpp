@@ -1,6 +1,7 @@
 #include "game.h"
 #include "game_data.h"
 #include "phook.h"
+#include "putil.h"
 using namespace CSS;
 
 bool CheckModules();
@@ -49,6 +50,12 @@ void CSS::DrawMenu()
 {
 	ImGui::Begin("CS:Source Multihack by rdbo");
 	ImGui::BeginTabBar("navbar");
+	if (ImGui::BeginTabItem("ESP"))
+	{
+		ImGui::Checkbox("ESP SnapLines", &esp_line);
+		ImGui::ColorPicker3("Snapline Color", color_snapline);
+		ImGui::EndTabItem();
+	}
 	if (ImGui::BeginTabItem("ESP Box"))
 	{
 		ImGui::Checkbox("Enable", &esp_box);
@@ -61,6 +68,15 @@ void CSS::DrawMenu()
 		ImGui::Checkbox("Bunnyhop", &bhop);
 		ImGui::EndTabItem();
 	}
+
+	if (ImGui::BeginTabItem("Debug"))
+	{
+		ImGui::Text("Window Rect: { %i, %i, %i, %i }", wrect.top, wrect.left, wrect.right, wrect.bottom);
+		ImGui::Text("Width: %i", wrect.GetWidth());
+		ImGui::Text("Height: %i", wrect.GetHeight());
+		ImGui::EndTabItem();
+	}
+
 	ImGui::EndTabBar();
 	ImGui::End();
 }

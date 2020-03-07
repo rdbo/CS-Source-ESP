@@ -1,6 +1,7 @@
 #pragma once
 #include "includes.h"
 #include "game.h"
+//#include "putil.h"
 #define MAX_PLAYERS 32
 #define ACTION_VALUE 6
 #define KEY_MENU VK_INSERT
@@ -64,5 +65,7 @@ extern bool updated[MAX_PLAYERS];
 
 extern bool bhop;
 extern bool esp_box;
+extern bool esp_line;
 extern float color_enemy_box[3];
 extern float color_team_box[3];
+extern float color_snapline[3];

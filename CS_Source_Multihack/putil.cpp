@@ -1,21 +1,29 @@
 #include "putil.h"
 
-void Window::SetRect(RECT rect)
-{
-	this->left = rect.left;
-	this->right = rect.right;
-	this->top = rect.top;
-	this->bottom = rect.bottom;
-}
-
 int Window::GetWidth()
 {
-	return this->right - this->left;
+	return right - left;
 }
 
 int Window::GetHeight()
 {
-	return this->bottom - this->top;
+	return bottom - top;
+}
+
+void Window::Update(HWND window)
+{
+	if (window == NULL) return;
+	HWND hWndParent = GetParent(window);
+	POINT p = { 0 };
+	MapWindowPoints(window, hWndParent, &p, 1);
+
+	this->left = p.x;
+	this->top = p.y;
+
+	RECT r;
+	GetClientRect(window, &r);
+	this->right = r.right + this->left;
+	this->bottom = r.bottom + this->top;
 }
 
 bool WorldToScreen(LPDIRECT3DDEVICE9 pDevice, ViewMatrix vmatrix, D3DXVECTOR3* pos, D3DXVECTOR3* out)
